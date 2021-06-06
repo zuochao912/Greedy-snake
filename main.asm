@@ -15,7 +15,8 @@ WinMain 		PROTO :DWORD,:DWORD,:DWORD,:DWORD
 startGame	PROTO
 changeSpeed1 PROTO :DWORD
 changeSpeed2 PROTO :DWORD
-
+moveSnake1 PROTO
+moveSnake2 PROTO
 SNAKE	struct
 	
 	posX	dw		?
@@ -207,7 +208,7 @@ Dead_addFood proc uses esi eax ebx , pos_X:WORD, pos_Y:WORD
 	mov count,0
 	mov esi,0							;初始化
 	.while TRUE							;遍历食物仓库，找到空处存入食物
-		.break .if (sFood[esi].axes==0||count>=100)
+		.break .if (count>=100||sFood[esi].axes==0)
 		add esi,sLen
 		add count,1
 	.endw
@@ -297,6 +298,19 @@ r1:
 	
 	ret
 addDFood endp
+
+InitFood proc
+		local count:WORD
+		mov esi,0
+		mov count,0
+		.while TRUE
+			.break .if count>=100
+		mov sFood[esi].axes,0
+		add count,1
+		add esi,sLen
+		.endw
+		ret
+InitFood endp
 
 InitSnake1 proc
 	mov bx,80
@@ -616,9 +630,10 @@ Snake1Dead:
 	.endw
 
 	invoke KillTimer,hMainWin,ID_TIMER2
+	;invoke moveSnake1
 	invoke InitSnake1
 	invoke	SetTimer,hMainWin,ID_TIMER2,speed1,NULL
-			
+	
 
 snake2judge:
 	mov next,1
@@ -705,8 +720,10 @@ Snake2Dead:
 	.endw
 
 	invoke KillTimer,hMainWin,ID_TIMER3
+	;invoke moveSnake2
 	invoke InitSnake2
 	invoke	SetTimer,hMainWin,ID_TIMER3,speed2,NULL
+	
 		ret				
 
 existP:
@@ -948,8 +965,10 @@ startGame proc
 	invoke 	changeAxes1,4
 	invoke  changeAxes2,4
 	invoke	changeRandom
+	invoke  InitFood
 	invoke	InitSnake1
 	invoke	InitSnake2
+
 	mov dFood.axes,3
 	invoke	addDFood
 	ret
